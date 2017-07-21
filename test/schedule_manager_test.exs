@@ -14,7 +14,7 @@ defmodule Verk.ScheduleManagerTest do
   test "init load scripts and schedule fetch" do
     state = %State{ redis: :redis }
 
-    redis_url = Confex.get(:verk, :redis_url)
+    redis_url = Confex.get_env(:verk, :redis_url)
 
     expect(Redix, :start_link, [redis_url], {:ok, :redis })
     expect(Verk.Scripts, :load, [:redis], :ok)
@@ -45,7 +45,7 @@ defmodule Verk.ScheduleManagerTest do
     expect(Redix, :command, [:redis, ["EVALSHA", script, 1, "retry", now |> DateTime.to_unix]], {:ok, encoded_job})
 
     assert handle_info(:fetch_retryable, state) == { :noreply, state }
-    assert_receive :fetch_retryable, 5
+    assert_receive :fetch_retryable, 50
 
     assert validate [Time, Redix]
   end

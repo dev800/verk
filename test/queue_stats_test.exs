@@ -5,13 +5,17 @@ defmodule Verk.QueueStatsTest do
   @table :queue_stats
 
   setup do
-    { :ok, _ } = Confex.get(:verk, :redis_url)
+    { :ok, _ } = Confex.get_env(:verk, :redis_url)
                   |> Redix.start_link([name: Verk.Redis])
     Redix.pipeline!(Verk.Redis, [["DEL",
         "stat:failed", "stat:processed",
         "stat:failed:queue_1", "stat:processed:queue_1",
         "stat:failed:queue_2", "stat:processed:queue_2"
       ]])
+    on_exit fn ->
+      ref = Process.monitor(Verk.Redis)
+      assert_receive {:'DOWN', ^ref, _, _, _}
+    end
     :ok
   end
 
