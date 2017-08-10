@@ -27,7 +27,12 @@ defmodule Verk.Supervisor do
     queue_stats = worker(Verk.QueueStats, [])
     redis       = worker(Redix, [redis_url, [name: Verk.Redis]], id: Verk.Redis)
 
-    children = [redis, event_producer, queue_stats, schedule_manager] ++ children
+    children =
+      if Verk.worker_executable? do
+        [redis, event_producer, queue_stats, schedule_manager] ++ children
+      else
+        [redis, event_producer, schedule_manager] ++ children
+      end
     supervise(children, strategy: :one_for_one)
   end
 
