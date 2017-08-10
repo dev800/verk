@@ -19,9 +19,17 @@ defmodule Verk.Queue.Supervisor do
     pool_name = String.to_atom("#{name}.pool")
     workers_manager = WorkersManager.name(name)
     queue_manager = QueueManager.name(name)
-    children = [worker(QueueManager, [queue_manager, name], id: queue_manager),
-                poolboy_spec(pool_name, size),
-                worker(WorkersManager, [workers_manager, name, queue_manager, pool_name, size], id: workers_manager)]
+    children = [
+      worker(QueueManager, [queue_manager, name], id: queue_manager),
+      poolboy_spec(pool_name, size)
+    ]
+
+    children =
+      if Verk.worker_executable? do
+        children |> List.insert_at(-1, worker(WorkersManager, [workers_manager, name, queue_manager, pool_name, size], id: workers_manager))
+      else
+        children
+      end
 
     supervise(children, strategy: :one_for_one)
   end

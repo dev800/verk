@@ -12,6 +12,14 @@ defmodule Verk do
 
   @schedule_key "schedule"
 
+  def worker_nodes do
+    Application.get_env(:verk, :worker_nodes, [node()])
+  end
+
+  def worker_executable? do
+    node() in worker_nodes()
+  end
+
   @doc """
   Add a new `queue` with a pool of size `size` of workers
   """
