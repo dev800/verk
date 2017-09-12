@@ -25,7 +25,7 @@ defmodule Verk.Queue.Supervisor do
     ]
 
     children =
-      if Verk.worker_executable? do
+      if Verk.worker_executable?(name) do
         children |> List.insert_at(-1, worker(WorkersManager, [workers_manager, name, queue_manager, pool_name, size], id: workers_manager))
       else
         children

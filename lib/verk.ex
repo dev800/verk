@@ -16,8 +16,32 @@ defmodule Verk do
     Application.get_env(:verk, :worker_nodes, [node()])
   end
 
+  def worker_assigns do
+    Application.get_env(:verk, :worker_assigns, [default: [:"#{node()}"], priority: [:"#{node()}"]])
+  end
+
   def worker_executable? do
     node() in worker_nodes()
+  end
+  def worker_executable?(queue_name) do
+    # e.g.
+    # queue_node == {se_keyword_fetcher: [:"beijing-prod@guangzhou.server"]}
+    queue_node =
+      worker_assigns()
+      |> Enum.filter(fn({config_queue_name, _node_name_list}) ->
+           queue_name == config_queue_name
+         end)
+      |> List.first
+
+    node_name_list =
+      case queue_node do
+        {_name, list} ->
+          list
+        _ ->
+          []
+      end
+
+    node() in node_name_list
   end
 
   @doc """
