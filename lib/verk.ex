@@ -17,7 +17,7 @@ defmodule Verk do
   end
 
   def worker_assigns do
-    Application.get_env(:verk, :worker_assigns, [default: [:"#{node()}"], priority: [:"#{node()}"]])
+    Application.get_env(:verk, :worker_assigns, [default: [node()], priority: [node()]])
   end
 
   def worker_executable? do
