@@ -96,4 +96,12 @@ defmodule Verk do
     <<part1::32, part2::32>> = :crypto.strong_rand_bytes(8)
    "#{part1}#{part2}"
   end
+
+  def worker_assigns do
+    Application.get_env(:verk, :worker_assigns, [default: [node()], priority: [node()]])
+  end
+
+  def worker_executable?(queue_name) do
+    node() in Keyword.get(worker_assigns(), queue_name, [])
+  end
 end
