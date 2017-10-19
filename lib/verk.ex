@@ -8,40 +8,16 @@ defmodule Verk do
 
   It has an API that provides information about the queues
   """
-  alias Verk.{Job, Time}
+  alias Verk.{Job, Time, Manager}
 
   @schedule_key "schedule"
-
-  def worker_nodes do
-    Application.get_env(:verk, :worker_nodes, [node()])
-  end
 
   def worker_assigns do
     Application.get_env(:verk, :worker_assigns, [default: [node()], priority: [node()]])
   end
 
-  def worker_executable? do
-    node() in worker_nodes()
-  end
   def worker_executable?(queue_name) do
-    # e.g.
-    # queue_node == {se_keyword_fetcher: [:"beijing-prod@guangzhou.server"]}
-    queue_node =
-      worker_assigns()
-      |> Enum.filter(fn({config_queue_name, _node_name_list}) ->
-           queue_name == config_queue_name
-         end)
-      |> List.first
-
-    node_name_list =
-      case queue_node do
-        {_name, list} ->
-          list
-        _ ->
-          []
-      end
-
-    node() in node_name_list
+    node() in Keyword.get(worker_assigns(), queue_name, [])
   end
 
   @doc """
@@ -49,7 +25,7 @@ defmodule Verk do
   """
   @spec add_queue(atom, pos_integer) :: Supervisor.on_start_child
   def add_queue(queue, size \\ 25) when is_atom(queue) and size > 0 do
-    Verk.Supervisor.start_child(queue, size)
+    Manager.add(queue, size)
   end
 
   @doc """
@@ -57,8 +33,11 @@ defmodule Verk do
   """
   @spec remove_queue(atom) :: :ok | {:error, :not_found}
   def remove_queue(queue) when is_atom(queue) do
-    Verk.Supervisor.stop_child(queue)
+    Manager.remove(queue)
   end
+
+  defdelegate pause_queue(queue), to: Verk.Manager, as: :pause
+  defdelegate resume_queue(queue), to: Verk.Manager, as: :resume
 
   @doc """
   Enqueues a Job to the specified queue returning the respective job id
@@ -125,4 +104,5 @@ defmodule Verk do
     <<part1::32, part2::32>> = :crypto.strong_rand_bytes(8)
    "#{part1}#{part2}"
   end
+
 end

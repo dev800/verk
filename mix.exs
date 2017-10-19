@@ -7,8 +7,8 @@ defmodule Verk.Mixfile do
 
   def project do
     [app: :verk,
-     version: "1.0.0",
-     elixir: "~> 1.3",
+     version: "1.1.1",
+     elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      test_coverage: [tool: Coverex.Task, coveralls: true],
@@ -28,7 +28,7 @@ defmodule Verk.Mixfile do
      { :poison, "~> 2.0 or ~> 3.0"},
      { :poolboy, "~> 1.5.1" },
      { :confex, "~> 3.2.0" },
-     { :gen_stage, "== 0.12.1" },
+     { :gen_stage, "~> 0.12.1" },
      { :credo, "~> 0.8", only: [:dev, :test] },
      { :earmark, "~> 1.0", only: :dev },
      { :ex_doc, "~> 0.16", only: :dev },
