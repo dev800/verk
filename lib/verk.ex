@@ -63,7 +63,7 @@ defmodule Verk do
   def enqueue(job = %Job{jid: nil}, redis), do: enqueue(%Job{job | jid: generate_jid()}, redis)
   def enqueue(job = %Job{jid: jid, queue: queue}, redis) do
     job = %Job{job | enqueued_at: Time.now |> DateTime.to_unix}
-    case Redix.command(redis, ["LPUSH", "queue:#{queue}", Poison.encode!(job)]) do
+    case Redix.command(redis, ["LPUSH", "queue:#{queue}", Job.encode!(job)]) do
       {:ok, _} -> {:ok, jid}
       {:error, reason} -> {:error, reason}
     end
@@ -93,7 +93,7 @@ defmodule Verk do
       #past time to do the job
       enqueue(job, redis)
     else
-      case Redix.command(redis, ["ZADD", @schedule_key, DateTime.to_unix(perform_at), Poison.encode!(job)]) do
+      case Redix.command(redis, ["ZADD", @schedule_key, DateTime.to_unix(perform_at), Job.encode!(job)]) do
         {:ok, _} -> {:ok, jid}
         {:error, reason} -> {:error, reason}
       end
